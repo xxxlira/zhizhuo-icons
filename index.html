@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>稚拙风图标库 - Naive Style Icons</title>
+<style>
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+:root {
+  --bg: #fafaf9;
+  --card-bg: #ffffff;
+  --text: #1c1917;
+  --text-secondary: #78716c;
+  --border: #e7e5e4;
+  --accent: #f97316;
+  --accent-light: #fff7ed;
+  --tag-bg: #f5f5f4;
+  --tag-active-bg: #1c1917;
+  --tag-active-text: #ffffff;
+  --shadow: 0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04);
+  --shadow-hover: 0 4px 12px rgba(0,0,0,0.1), 0 2px 4px rgba(0,0,0,0.06);
+  --radius: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root {
+    --bg: #1c1917;
+    --card-bg: #292524;
+    --text: #fafaf9;
+    --text-secondary: #a8a29e;
+    --border: #44403c;
+    --accent: #fb923c;
+    --accent-light: #431407;
+    --tag-bg: #292524;
+    --tag-active-bg: #fafaf9;
+    --tag-active-text: #1c1917;
+    --shadow: 0 1px 3px rgba(0,0,0,0.2);
+    --shadow-hover: 0 4px 16px rgba(0,0,0,0.4);
+  }
+}
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans SC", sans-serif;
+  background: var(--bg); color: var(--text); line-height: 1.6; min-height: 100vh;
+}
+.header {
+  position: sticky; top: 0; z-index: 100;
+  background: var(--bg); border-bottom: 1px solid var(--border);
+  backdrop-filter: blur(12px); -webkit-backdrop-filter: blur(12px);
+  padding: 20px 24px 16px;
+}
+.header-inner { max-width: 1440px; margin: 0 auto; }
+.header h1 { font-size: 22px; font-weight: 700; letter-spacing: -0.3px; margin-bottom: 4px; }
+.header .subtitle { font-size: 13px; color: var(--text-secondary); margin-bottom: 16px; }
+.search-wrap { position: relative; max-width: 420px; }
+.search-wrap input {
+  width: 100%; padding: 10px 14px 10px 38px;
+  border: 1.5px solid var(--border); border-radius: 8px;
+  font-size: 14px; background: var(--card-bg); color: var(--text);
+  outline: none; transition: border-color 0.2s;
+}
+.search-wrap input:focus { border-color: var(--accent); }
+.search-wrap .search-icon {
+  position: absolute; left: 12px; top: 50%; transform: translateY(-50%);
+  color: var(--text-secondary); pointer-events: none;
+}
+.tags { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 14px; }
+.tag {
+  padding: 5px 14px; border-radius: 20px; font-size: 13px;
+  font-weight: 500; cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--tag-bg); color: var(--text-secondary);
+  transition: all 0.15s; user-select: none; white-space: nowrap;
+}
+.tag:hover { border-color: var(--accent); color: var(--accent); }
+.tag.active {
+  background: var(--tag-active-bg); color: var(--tag-active-text);
+  border-color: var(--tag-active-bg);
+}
+.stats {
+  max-width: 1440px; margin: 0 auto; padding: 12px 24px 0;
+  font-size: 13px; color: var(--text-secondary);
+}
+.gallery {
+  max-width: 1440px; margin: 0 auto; padding: 20px 24px 40px;
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 12px;
+}
+.icon-card {
+  background: var(--card-bg); border: 1px solid var(--border);
+  border-radius: var(--radius); padding: 16px 8px 12px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 8px; cursor: pointer; transition: all 0.2s;
+  box-shadow: var(--shadow);
+}
+.icon-card:hover {
+  transform: translateY(-2px); box-shadow: var(--shadow-hover);
+  border-color: var(--accent);
+}
+.icon-card .thumb { width: 48px; height: 48px; display: flex; align-items: center; justify-content: center; }
+.icon-card .thumb img { width: 100%; height: 100%; object-fit: contain; }
+.icon-card .name {
+  font-size: 11px; color: var(--text-secondary); text-align: center;
+  word-break: break-all; line-height: 1.3; max-width: 100%;
+}
+.icon-card.hidden { display: none; }
+.no-results {
+  text-align: center; padding: 60px 20px; color: var(--text-secondary);
+  grid-column: 1 / -1; font-size: 15px;
+}
+.modal-overlay {
+  display: none; position: fixed; inset: 0; z-index: 200;
+  background: rgba(0,0,0,0.5); align-items: center; justify-content: center;
+  backdrop-filter: blur(4px); -webkit-backdrop-filter: blur(4px);
+}
+.modal-overlay.open { display: flex; }
+.modal {
+  background: var(--card-bg); border-radius: 14px;
+  max-width: 620px; width: 90%; max-height: 85vh;
+  display: flex; flex-direction: column;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.25);
+  animation: modalIn 0.2s ease;
+}
+@keyframes modalIn {
+  from { opacity: 0; transform: scale(0.95) translateY(10px); }
+  to { opacity: 1; transform: scale(1) translateY(0); }
+}
+.modal-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 20px; border-bottom: 1px solid var(--border);
+}
+.modal-header h3 { font-size: 15px; font-weight: 600; }
+.modal-header button {
+  width: 32px; height: 32px; border-radius: 8px; border: none;
+  background: var(--tag-bg); color: var(--text-secondary);
+  cursor: pointer; font-size: 18px; display: flex; align-items: center; justify-content: center;
+  transition: all 0.15s;
+}
+.modal-header button:hover { background: var(--border); color: var(--text); }
+.modal-body {
+  padding: 24px; overflow-y: auto; flex: 1;
+  display: flex; flex-direction: column; align-items: center; gap: 20px;
+}
+.modal-body .preview-svg {
+  width: 160px; height: 160px; display: flex; align-items: center; justify-content: center;
+  border: 1px solid var(--border); border-radius: 12px; padding: 20px;
+  background: var(--bg);
+}
+.modal-body .preview-svg img { width: 100%; height: 100%; object-fit: contain; }
+.modal-body .source-wrap { width: 100%; }
+.modal-body .source-label { font-size: 12px; color: var(--text-secondary); margin-bottom: 6px; font-weight: 500; }
+.modal-body .source-code {
+  width: 100%; max-height: 200px; overflow: auto;
+  background: var(--bg); border: 1px solid var(--border);
+  border-radius: 8px; padding: 14px 16px;
+  font-family: "SF Mono", "Fira Code", "Cascadia Code", monospace;
+  font-size: 12px; line-height: 1.5; white-space: pre; color: var(--text);
+  tab-size: 2;
+}
+.modal-footer {
+  padding: 14px 20px; border-top: 1px solid var(--border);
+  display: flex; gap: 10px; justify-content: flex-end;
+}
+.btn {
+  padding: 8px 18px; border-radius: 8px; font-size: 13px; font-weight: 500;
+  cursor: pointer; border: 1.5px solid var(--border);
+  transition: all 0.15s; text-decoration: none; display: inline-flex; align-items: center; gap: 6px;
+}
+.btn-primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-primary:hover { opacity: 0.9; }
+.btn-secondary { background: var(--card-bg); color: var(--text); }
+.btn-secondary:hover { background: var(--tag-bg); }
+.footer {
+  text-align: center; padding: 30px 24px; color: var(--text-secondary);
+  font-size: 12px; border-top: 1px solid var(--border);
+  max-width: 1440px; margin: 0 auto;
+}
+@media (max-width: 640px) {
+  .gallery { grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; padding: 16px 12px 32px; }
+  .icon-card { padding: 12px 6px 8px; }
+  .icon-card .thumb { width: 40px; height: 40px; }
+  .icon-card .name { font-size: 10px; }
+  .header { padding: 16px 16px 12px; }
+  .header h1 { font-size: 18px; }
+}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-inner">
+    <h1>稚拙风图标库</h1>
+    <p class="subtitle">共 <strong>234</strong> 个 SVG 图标 &mdash; 朴素手绘风格 &middot; 开源免费</p>
+    <div class="search-wrap">
+      <svg class="search-icon" width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+      <input type="text" id="searchInput" placeholder="搜索图标名称..." autocomplete="off">
+    </div>
+    <div class="tags" id="tagList"></div>
+  </div>
+</div>
+
+<div class="stats"><span id="visibleCount">234</span> 个图标</div>
+
+<div class="gallery" id="gallery"></div>
+
+<div class="footer">稚拙风图标库 &mdash; 基于 <a href="https://github.com/nicedoc/naive-ui-naive-admin" style="color:var(--accent)">Naive UI</a> 风格设计</div>
+
+<div class="modal-overlay" id="modalOverlay">
+  <div class="modal">
+    <div class="modal-header">
+      <h3 id="modalTitle"></h3>
+      <button onclick="closeModal()">&times;</button>
+    </div>
+    <div class="modal-body">
+      <div class="preview-svg" id="modalPreview"></div>
+      <div class="source-wrap">
+        <div class="source-label">SVG 源码</div>
+        <div class="source-code" id="modalSource"></div>
+      </div>
+    </div>
+    <div class="modal-footer">
+      <a class="btn btn-primary" id="modalDownload" download>下载 SVG</a>
+      <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
+    </div>
+  </div>
+</div>
+
+<script>
+var ICONS_DATA = [{"file": "accessibility-zoom-in.svg", "category": "无障碍 Accessibility"}, {"file": "accessibility-zoom-out.svg", "category": "无障碍 Accessibility"}, {"file": "accessibility.svg", "category": "无障碍 Accessibility"}, {"file": "activity.svg", "category": "通用 General"}, {"file": "add.svg", "category": "操作 Action"}, {"file": "align-center.svg", "category": "对齐 Align"}, {"file": "align-justify.svg", "category": "对齐 Align"}, {"file": "align-left.svg", "category": "对齐 Align"}, {"file": "align-right.svg", "category": "对齐 Align"}, {"file": "anchor.svg", "category": "通用 General"}, {"file": "arrow-down-circle-2.svg", "category": "箭头 Arrow"}, {"file": "arrow-down-circle.svg", "category": "箭头 Arrow"}, {"file": "arrow-down-left.svg", "category": "箭头 Arrow"}, {"file": "arrow-down-right.svg", "category": "箭头 Arrow"}, {"file": "arrow-down.svg", "category": "箭头 Arrow"}, {"file": "arrow-left-circle.svg", "category": "箭头 Arrow"}, {"file": "arrow-left.svg", "category": "箭头 Arrow"}, {"file": "arrow-right-circle.svg", "category": "箭头 Arrow"}, {"file": "arrow-right.svg", "category": "箭头 Arrow"}, {"file": "arrow-up-circle.svg", "category": "箭头 Arrow"}, {"file": "arrow-up-left.svg", "category": "箭头 Arrow"}, {"file": "arrow-up-right.svg", "category": "箭头 Arrow"}, {"file": "arrow-up.svg", "category": "箭头 Arrow"}, {"file": "at-sign.svg", "category": "通信 Communication"}, {"file": "audio-description.svg", "category": "其他 Other"}, {"file": "award.svg", "category": "通用 General"}, {"file": "barcode.svg", "category": "其他 Other"}, {"file": "blind-cane.svg", "category": "其他 Other"}, {"file": "block-user-2.svg", "category": "区块 Block"}, {"file": "block-user-3.svg", "category": "区块 Block"}, {"file": "block-user.svg", "category": "区块 Block"}, {"file": "block.svg", "category": "区块 Block"}, {"file": "bookmark.svg", "category": "操作 Action"}, {"file": "braille.svg", "category": "其他 Other"}, {"file": "cane.svg", "category": "其他 Other"}, {"file": "chat.svg", "category": "其他 Other"}, {"file": "check-circle.svg", "category": "操作 Action"}, {"file": "check-square.svg", "category": "操作 Action"}, {"file": "check.svg", "category": "操作 Action"}, {"file": "chevron-down.svg", "category": "箭头 Arrow"}, {"file": "chevron-left.svg", "category": "箭头 Arrow"}, {"file": "chevron-right.svg", "category": "箭头 Arrow"}, {"file": "chevron-up.svg", "category": "箭头 Arrow"}, {"file": "chevrons-down.svg", "category": "箭头 Arrow"}, {"file": "chevrons-left.svg", "category": "箭头 Arrow"}, {"file": "chevrons-right.svg", "category": "箭头 Arrow"}, {"file": "chevrons-up.svg", "category": "箭头 Arrow"}, {"file": "circle.svg", "category": "其他 Other"}, {"file": "clear-day.svg", "category": "其他 Other"}, {"file": "clock.svg", "category": "其他 Other"}, {"file": "close-circle.svg", "category": "操作 Action"}, {"file": "close.svg", "category": "操作 Action"}, {"file": "closed-captioning.svg", "category": "其他 Other"}, {"file": "cloudy-2.svg", "category": "其他 Other"}, {"file": "cloudy.svg", "category": "其他 Other"}, {"file": "coffee.svg", "category": "通用 General"}, {"file": "comment-circle.svg", "category": "其他 Other"}, {"file": "comment-square.svg", "category": "其他 Other"}, {"file": "copy-2.svg", "category": "操作 Action"}, {"file": "copy.svg", "category": "操作 Action"}, {"file": "corner-down-left.svg", "category": "箭头 Arrow"}, {"file": "corner-down-right.svg", "category": "箭头 Arrow"}, {"file": "corner-left-down.svg", "category": "箭头 Arrow"}, {"file": "corner-left-up.svg", "category": "箭头 Arrow"}, {"file": "corner-right-down.svg", "category": "箭头 Arrow"}, {"file": "corner-right-up.svg", "category": "箭头 Arrow"}, {"file": "corner-up-left.svg", "category": "箭头 Arrow"}, {"file": "corner-up-right.svg", "category": "箭头 Arrow"}, {"file": "cut-2.svg", "category": "其他 Other"}, {"file": "cut.svg", "category": "其他 Other"}, {"file": "delete-2.svg", "category": "操作 Action"}, {"file": "delete.svg", "category": "操作 Action"}, {"file": "dot.svg", "category": "其他 Other"}, {"file": "download-2.svg", "category": "操作 Action"}, {"file": "download-3.svg", "category": "操作 Action"}, {"file": "download.svg", "category": "操作 Action"}, {"file": "drag.svg", "category": "其他 Other"}, {"file": "drizzle.svg", "category": "其他 Other"}, {"file": "droplet-2.svg", "category": "天气 Weather"}, {"file": "droplet-3.svg", "category": "天气 Weather"}, {"file": "droplet.svg", "category": "天气 Weather"}, {"file": "edit-2.svg", "category": "编辑 Edit"}, {"file": "edit-3.svg", "category": "编辑 Edit"}, {"file": "edit.svg", "category": "编辑 Edit"}, {"file": "elevator.svg", "category": "其他 Other"}, {"file": "emoji.svg", "category": "其他 Other"}, {"file": "empty.svg", "category": "其他 Other"}, {"file": "error.svg", "category": "其他 Other"}, {"file": "escalator-down.svg", "category": "其他 Other"}, {"file": "escalator-up.svg", "category": "其他 Other"}, {"file": "exit.svg", "category": "其他 Other"}, {"file": "fahrenheit.svg", "category": "其他 Other"}, {"file": "feather-2.svg", "category": "通用 General"}, {"file": "feather.svg", "category": "通用 General"}, {"file": "filter.svg", "category": "操作 Action"}, {"file": "fixed.svg", "category": "其他 Other"}, {"file": "flag.svg", "category": "操作 Action"}, {"file": "fog.svg", "category": "其他 Other"}, {"file": "fold-circle.svg", "category": "其他 Other"}, {"file": "fold-square.svg", "category": "其他 Other"}, {"file": "follow-2.svg", "category": "其他 Other"}, {"file": "follow-3.svg", "category": "其他 Other"}, {"file": "follow.svg", "category": "其他 Other"}, {"file": "frown.svg", "category": "通用 General"}, {"file": "full-moon.svg", "category": "其他 Other"}, {"file": "fullscreen-2.svg", "category": "其他 Other"}, {"file": "fullscreen.svg", "category": "其他 Other"}, {"file": "gift.svg", "category": "通用 General"}, {"file": "globe.svg", "category": "通用 General"}, {"file": "grid.svg", "category": "布局 Layout"}, {"file": "hail.svg", "category": "其他 Other"}, {"file": "hamburger.svg", "category": "其他 Other"}, {"file": "hash.svg", "category": "通用 General"}, {"file": "haze.svg", "category": "其他 Other"}, {"file": "hearing.svg", "category": "其他 Other"}, {"file": "heart-fill.svg", "category": "操作 Action"}, {"file": "heart.svg", "category": "操作 Action"}, {"file": "help-circle.svg", "category": "通用 General"}, {"file": "home-1.svg", "category": "通用 General"}, {"file": "home.svg", "category": "通用 General"}, {"file": "humidity.svg", "category": "其他 Other"}, {"file": "info.svg", "category": "通用 General"}, {"file": "invisible.svg", "category": "其他 Other"}, {"file": "italic.svg", "category": "编辑 Edit"}, {"file": "key.svg", "category": "通用 General"}, {"file": "layers.svg", "category": "布局 Layout"}, {"file": "layout.svg", "category": "布局 Layout"}, {"file": "life-buoy.svg", "category": "通用 General"}, {"file": "lightning.svg", "category": "其他 Other"}, {"file": "link-2.svg", "category": "操作 Action"}, {"file": "link.svg", "category": "操作 Action"}, {"file": "list.svg", "category": "编辑 Edit"}, {"file": "loading.svg", "category": "其他 Other"}, {"file": "lock-2.svg", "category": "操作 Action"}, {"file": "lock.svg", "category": "操作 Action"}, {"file": "log-in.svg", "category": "通用 General"}, {"file": "low-vision.svg", "category": "其他 Other"}, {"file": "mail.svg", "category": "通信 Communication"}, {"file": "manual-wheelchair.svg", "category": "其他 Other"}, {"file": "meh.svg", "category": "通用 General"}, {"file": "message.svg", "category": "通信 Communication"}, {"file": "minus.svg", "category": "操作 Action"}, {"file": "mobility-scooter.svg", "category": "其他 Other"}, {"file": "moon-phase.svg", "category": "天气 Weather"}, {"file": "moon.svg", "category": "天气 Weather"}, {"file": "more-horizontal.svg", "category": "操作 Action"}, {"file": "more-vertical.svg", "category": "操作 Action"}, {"file": "move.svg", "category": "操作 Action"}, {"file": "mute.svg", "category": "其他 Other"}, {"file": "night-clear.svg", "category": "夜间 Night"}, {"file": "night-cloudy.svg", "category": "夜间 Night"}, {"file": "night-drizzle.svg", "category": "夜间 Night"}, {"file": "night-fog-1.svg", "category": "夜间 Night"}, {"file": "night-fog.svg", "category": "夜间 Night"}, {"file": "night-hail.svg", "category": "夜间 Night"}, {"file": "night-moderate-rain.svg", "category": "夜间 Night"}, {"file": "night-rain.svg", "category": "夜间 Night"}, {"file": "night-snow.svg", "category": "夜间 Night"}, {"file": "night-thunderstorm.svg", "category": "夜间 Night"}, {"file": "no-weather-data.svg", "category": "其他 Other"}, {"file": "notification-off.svg", "category": "通知 Notification"}, {"file": "notification.svg", "category": "通知 Notification"}, {"file": "paste.svg", "category": "其他 Other"}, {"file": "pin.svg", "category": "其他 Other"}, {"file": "pollen.svg", "category": "其他 Other"}, {"file": "pressure.svg", "category": "其他 Other"}, {"file": "profile.svg", "category": "其他 Other"}, {"file": "qrcode.svg", "category": "其他 Other"}, {"file": "radio.svg", "category": "通用 General"}, {"file": "rain.svg", "category": "其他 Other"}, {"file": "rainbow-2.svg", "category": "其他 Other"}, {"file": "rainbow.svg", "category": "其他 Other"}, {"file": "ramp.svg", "category": "其他 Other"}, {"file": "refresh-2.svg", "category": "操作 Action"}, {"file": "refresh-3.svg", "category": "操作 Action"}, {"file": "refresh.svg", "category": "操作 Action"}, {"file": "rotate.svg", "category": "操作 Action"}, {"file": "sandstorm.svg", "category": "其他 Other"}, {"file": "save.svg", "category": "操作 Action"}, {"file": "scan.svg", "category": "其他 Other"}, {"file": "screen-reader.svg", "category": "其他 Other"}, {"file": "search-ai.svg", "category": "操作 Action"}, {"file": "search.svg", "category": "操作 Action"}, {"file": "service-dog.svg", "category": "其他 Other"}, {"file": "share-2.svg", "category": "操作 Action"}, {"file": "share-3.svg", "category": "操作 Action"}, {"file": "share.svg", "category": "操作 Action"}, {"file": "showers.svg", "category": "其他 Other"}, {"file": "sign-language.svg", "category": "其他 Other"}, {"file": "small-screen-2.svg", "category": "其他 Other"}, {"file": "small-screen.svg", "category": "其他 Other"}, {"file": "snowfall.svg", "category": "其他 Other"}, {"file": "snowflake.svg", "category": "其他 Other"}, {"file": "sort.svg", "category": "操作 Action"}, {"file": "star-fill.svg", "category": "操作 Action"}, {"file": "star.svg", "category": "操作 Action"}, {"file": "success.svg", "category": "其他 Other"}, {"file": "sun.svg", "category": "天气 Weather"}, {"file": "tag.svg", "category": "通用 General"}, {"file": "temperature-1.svg", "category": "其他 Other"}, {"file": "temperature.svg", "category": "其他 Other"}, {"file": "text-reader.svg", "category": "其他 Other"}, {"file": "thumb-down.svg", "category": "其他 Other"}, {"file": "thumb-up.svg", "category": "其他 Other"}, {"file": "thunder-single.svg", "category": "其他 Other"}, {"file": "thunder.svg", "category": "其他 Other"}, {"file": "tide.svg", "category": "其他 Other"}, {"file": "tty.svg", "category": "其他 Other"}, {"file": "unlock-2.svg", "category": "操作 Action"}, {"file": "unlock.svg", "category": "操作 Action"}, {"file": "upload-2.svg", "category": "操作 Action"}, {"file": "upload-3.svg", "category": "操作 Action"}, {"file": "upload.svg", "category": "操作 Action"}, {"file": "user-2.svg", "category": "用户 User"}, {"file": "user-minus-2.svg", "category": "用户 User"}, {"file": "user-minus.svg", "category": "用户 User"}, {"file": "user-plus-2.svg", "category": "用户 User"}, {"file": "user-plus.svg", "category": "用户 User"}, {"file": "user.svg", "category": "用户 User"}, {"file": "users-2.svg", "category": "用户 User"}, {"file": "users.svg", "category": "用户 User"}, {"file": "visibility.svg", "category": "其他 Other"}, {"file": "visible.svg", "category": "其他 Other"}, {"file": "volume.svg", "category": "其他 Other"}, {"file": "walker.svg", "category": "其他 Other"}, {"file": "warning-octagon.svg", "category": "其他 Other"}, {"file": "warning.svg", "category": "其他 Other"}, {"file": "wheelchair-lift.svg", "category": "其他 Other"}, {"file": "wheelchair.svg", "category": "其他 Other"}, {"file": "wind-direction.svg", "category": "天气 Weather"}, {"file": "wind-speed.svg", "category": "天气 Weather"}, {"file": "wind.svg", "category": "天气 Weather"}, {"file": "zoom-in.svg", "category": "操作 Action"}, {"file": "zoom-out.svg", "category": "操作 Action"}];
+
+var activeCategory = '全部';
+var searchQuery = '';
+
+function buildTagList() {
+  var cats = {};
+  ICONS_DATA.forEach(function(d) { cats[d.category] = (cats[d.category] || 0) + 1; });
+  var entries = [['全部', ICONS_DATA.length]];
+  var catNames = Object.keys(cats).sort(function(a,b) {
+    if (a === '其他 Other') return 1;
+    if (b === '其他 Other') return -1;
+    return cats[b] - cats[a];
+  });
+  catNames.forEach(function(cat) { entries.push([cat, cats[cat]]); });
+  var tagList = document.getElementById('tagList');
+  tagList.innerHTML = entries.map(function(e) {
+    var cls = e[0] === '全部' ? 'tag active' : 'tag';
+    return '<span class="' + cls + '" data-cat="' + e[0] + '">' + e[0] + ' <small>(' + e[1] + ')</small></span>';
+  }).join('');
+  tagList.addEventListener('click', function(e) {
+    var tag = e.target.closest('.tag');
+    if (!tag) return;
+    document.querySelectorAll('.tag').forEach(function(t) { t.classList.remove('active'); });
+    tag.classList.add('active');
+    activeCategory = tag.dataset.cat;
+    renderGallery();
+  });
+}
+
+function renderGallery() {
+  var gallery = document.getElementById('gallery');
+  var q = searchQuery.toLowerCase().trim();
+  var html = '';
+  var visible = 0;
+  ICONS_DATA.forEach(function(d) {
+    var matchCat = activeCategory === '全部' || d.category === activeCategory;
+    var matchSearch = !q || d.file.toLowerCase().indexOf(q) !== -1;
+    var show = matchCat && matchSearch;
+    if (show) visible++;
+    var hiddenClass = show ? '' : ' hidden';
+    html += '<div class="icon-card' + hiddenClass + '" data-file="' + d.file + '" onclick="openModal(\'' + d.file + '\')">'
+      + '<div class="thumb"><img src="icons/' + d.file + '" alt="' + d.file + '" loading="lazy"></div>'
+      + '<span class="name">' + d.file.replace('.svg','') + '</span></div>';
+  });
+  if (visible === 0) {
+    html += '<div class="no-results">没有找到匹配的图标</div>';
+  }
+  gallery.innerHTML = html;
+  document.getElementById('visibleCount').textContent = visible;
+}
+
+function openModal(filename) {
+  var filePath = 'icons/' + filename;
+  document.getElementById('modalTitle').textContent = filename;
+  document.getElementById('modalPreview').innerHTML = '<img src="' + filePath + '" alt="' + filename + '">';
+  document.getElementById('modalDownload').href = filePath;
+  document.getElementById('modalDownload').download = filename;
+  var sourceEl = document.getElementById('modalSource');
+  sourceEl.textContent = '加载中...';
+  fetch(filePath)
+    .then(function(r) { return r.text(); })
+    .then(function(text) { sourceEl.textContent = text; })
+    .catch(function() { sourceEl.textContent = '// 无法加载源码'; });
+  document.getElementById('modalOverlay').classList.add('open');
+}
+
+function closeModal() {
+  document.getElementById('modalOverlay').classList.remove('open');
+}
+
+document.getElementById('modalOverlay').addEventListener('click', function(e) {
+  if (e.target === this) closeModal();
+});
+
+document.addEventListener('keydown', function(e) {
+  if (e.key === 'Escape') closeModal();
+});
+
+document.getElementById('searchInput').addEventListener('input', function() {
+  searchQuery = this.value;
+  renderGallery();
+});
+
+buildTagList();
+renderGallery();
+</script>
+</body>
+</html>
