@@ -1,6 +1,10 @@
 # 稚拙风图标库（Zhizhuo Icons）
 
-233 枚面性+线条双风格自由切换的 SVG 图标，适合 Web / 小程序 / 桌面应用界面设计。
+保留手绘线条质感，适用于童趣或原始类设计风格。设计灵感来源于grug APP。
+适合 APP / Web / 小程序 / 桌面应用界面设计。
+
+查看或下载svg网站：https://xxxlira.github.io/zhizhuo-icons
+
 
 ## 分类概览
 
