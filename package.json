@@ -1,6 +1,6 @@
 {
   "name": "zhizhuo-icons",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "稚拙风图标库 - 一套面性+线条双风格 SVG 图标库，覆盖导航、操作、状态、社交、媒体、商业、文件、设备、时间、交通、无障碍、天气等场景",
   "main": "index.js",
   "files": [
