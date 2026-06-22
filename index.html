@@ -168,6 +168,42 @@ body {
 .btn-primary:hover { opacity: 0.9; }
 .btn-secondary { background: var(--card-bg); color: var(--text); }
 .btn-secondary:hover { background: var(--tag-bg); }
+
+/* PNG 下载面板 */
+.png-panel { display: none; width: 100%; flex-direction: column; gap: 16px; }
+.png-panel.open { display: flex; }
+.png-panel .section-label { font-size: 12px; color: var(--text-secondary); font-weight: 500; }
+.png-panel .preset-sizes { display: flex; flex-wrap: wrap; gap: 6px; }
+.png-panel .preset-sizes button {
+  padding: 6px 12px; border-radius: 6px; font-size: 12px; font-weight: 500;
+  cursor: pointer; border: 1.5px solid var(--border);
+  background: var(--card-bg); color: var(--text);
+  transition: all 0.15s; font-family: inherit;
+}
+.png-panel .preset-sizes button:hover { border-color: var(--accent); color: var(--accent); }
+.png-panel .preset-sizes button.active {
+  background: var(--accent); color: #fff; border-color: var(--accent);
+}
+.png-panel .custom-size { display: flex; align-items: center; gap: 8px; }
+.png-panel .custom-size input {
+  width: 80px; padding: 7px 10px; border: 1.5px solid var(--border);
+  border-radius: 6px; font-size: 13px; text-align: center;
+  background: var(--card-bg); color: var(--text); outline: none;
+  font-family: inherit; transition: border-color 0.15s;
+}
+.png-panel .custom-size input:focus { border-color: var(--accent); }
+.png-panel .custom-size .lock-icon {
+  font-size: 16px; cursor: pointer; user-select: none;
+  color: var(--text-secondary); transition: color 0.15s;
+}
+.png-panel .custom-size .lock-icon.locked { color: var(--accent); }
+.png-panel .size-result {
+  font-size: 12px; color: var(--text-secondary);
+}
+.png-panel .size-result span { color: var(--text); font-weight: 600; }
+.png-panel .png-actions { display: flex; gap: 8px; }
+.png-panel .png-actions .btn { font-family: inherit; }
+
 .footer {
   text-align: center; padding: 30px 24px; color: var(--text-secondary);
   font-size: 12px; border-top: 1px solid var(--border);
@@ -215,9 +251,34 @@ body {
         <div class="source-label">SVG 源码</div>
         <div class="source-code" id="modalSource"></div>
       </div>
+      <div class="png-panel" id="pngPanel">
+        <div class="section-label">选择 PNG 尺寸</div>
+        <div class="preset-sizes" id="presetSizes">
+          <button data-w="16" data-h="16">16px</button>
+          <button data-w="24" data-h="24">24px</button>
+          <button data-w="32" data-h="32">32px</button>
+          <button data-w="48" data-h="48">48px</button>
+          <button data-w="64" data-h="64">64px</button>
+          <button data-w="128" data-h="128">128px</button>
+          <button data-w="256" data-h="256">256px</button>
+          <button data-w="512" data-h="512">512px</button>
+        </div>
+        <div class="section-label">自定义尺寸（等比缩放）</div>
+        <div class="custom-size">
+          <input type="number" id="pngWidth" min="1" max="4096" value="128" placeholder="宽">
+          <span class="lock-icon locked" id="lockRatio" title="锁定宽高比">&#x1F517;</span>
+          <input type="number" id="pngHeight" min="1" max="4096" value="128" placeholder="高">
+        </div>
+        <div class="size-result">实际渲染: <span id="sizeResult">128 x 128</span> px</div>
+        <div class="png-actions">
+          <button class="btn btn-primary" onclick="downloadPng()">确认下载</button>
+          <button class="btn btn-secondary" onclick="hidePngPanel()">取消</button>
+        </div>
+      </div>
     </div>
     <div class="modal-footer">
       <a class="btn btn-primary" id="modalDownload" download>下载 SVG</a>
+      <button class="btn btn-primary" id="modalDownloadPng" onclick="showPngPanel()">下载 PNG</button>
       <button class="btn btn-secondary" onclick="closeModal()">关闭</button>
     </div>
   </div>
@@ -284,15 +345,171 @@ function openModal(filename) {
   document.getElementById('modalDownload').download = filename;
   var sourceEl = document.getElementById('modalSource');
   sourceEl.textContent = '加载中...';
+  // 重置 PNG 面板
+  hidePngPanel();
+  currentSvgText = '';
+  document.querySelectorAll('#presetSizes button').forEach(function(b) { b.classList.remove('active'); });
   fetch(filePath)
     .then(function(r) { return r.text(); })
-    .then(function(text) { sourceEl.textContent = text; })
+    .then(function(text) { sourceEl.textContent = text; currentSvgText = text; })
     .catch(function() { sourceEl.textContent = '// 无法加载源码'; });
   document.getElementById('modalOverlay').classList.add('open');
 }
 
 function closeModal() {
   document.getElementById('modalOverlay').classList.remove('open');
+  hidePngPanel();
+}
+
+// ===== PNG 下载功能 =====
+var currentSvgText = '';
+var currentSvgRatio = 1; // 原始宽高比 (width/height)
+var currentPngW = 128;
+var currentPngH = 128;
+
+function showPngPanel() {
+  document.getElementById('pngPanel').classList.add('open');
+  document.getElementById('modalPreview').style.display = 'none';
+  document.querySelector('.source-wrap').style.display = 'none';
+  document.getElementById('modalDownload').style.display = 'none';
+  document.getElementById('modalDownloadPng').style.display = 'none';
+  // 初始化尺寸
+  if (!currentSvgText) return;
+  parseSvgRatio();
+  currentPngW = 128;
+  currentPngH = Math.round(128 / currentSvgRatio);
+  if (currentPngH < 1) currentPngH = 1;
+  if (currentPngH > 4096) currentPngH = 4096;
+  syncSizeInputs();
+  updateSizeResult();
+}
+
+function hidePngPanel() {
+  document.getElementById('pngPanel').classList.remove('open');
+  document.getElementById('modalPreview').style.display = '';
+  document.querySelector('.source-wrap').style.display = '';
+  document.getElementById('modalDownload').style.display = '';
+  document.getElementById('modalDownloadPng').style.display = '';
+}
+
+function parseSvgRatio() {
+  var m = currentSvgText.match(/viewBox=["']([^"']*)["']/);
+  if (m) {
+    var parts = m[1].trim().split(/\s+/);
+    if (parts.length >= 4) {
+      var vbw = parseFloat(parts[2]);
+      var vbh = parseFloat(parts[3]);
+      if (vbw > 0 && vbh > 0) { currentSvgRatio = vbw / vbh; return; }
+    }
+  }
+  var wm = currentSvgText.match(/width=["'](\d+(?:\.\d+)?)/);
+  var hm = currentSvgText.match(/height=["'](\d+(?:\.\d+)?)/);
+  if (wm && hm) {
+    var w = parseFloat(wm[1]);
+    var h = parseFloat(hm[1]);
+    if (w > 0 && h > 0) { currentSvgRatio = w / h; return; }
+  }
+  currentSvgRatio = 1;
+}
+
+function syncSizeInputs() {
+  document.getElementById('pngWidth').value = currentPngW;
+  document.getElementById('pngHeight').value = currentPngH;
+}
+
+function updateSizeResult() {
+  document.getElementById('sizeResult').textContent = currentPngW + ' x ' + currentPngH;
+}
+
+// 预设尺寸点击
+document.getElementById('presetSizes').addEventListener('click', function(e) {
+  var btn = e.target.closest('button');
+  if (!btn) return;
+  var w = parseInt(btn.dataset.w);
+  var h = parseInt(btn.dataset.h);
+  if (!isNaN(w)) currentPngW = w;
+  if (!isNaN(h)) currentPngH = h;
+  syncSizeInputs();
+  updateSizeResult();
+  // 高亮
+  document.querySelectorAll('#presetSizes button').forEach(function(b) { b.classList.remove('active'); });
+  btn.classList.add('active');
+});
+
+// 锁定宽高比切换
+var ratioLocked = true;
+document.getElementById('lockRatio').addEventListener('click', function() {
+  ratioLocked = !ratioLocked;
+  this.classList.toggle('locked', ratioLocked);
+});
+
+// 自定义宽度输入
+document.getElementById('pngWidth').addEventListener('input', function() {
+  var w = parseInt(this.value);
+  if (isNaN(w) || w < 1) return;
+  currentPngW = w;
+  if (ratioLocked) {
+    currentPngH = Math.round(w / currentSvgRatio);
+    if (currentPngH < 1) currentPngH = 1;
+    if (currentPngH > 4096) currentPngH = 4096;
+  }
+  syncSizeInputs();
+  updateSizeResult();
+  document.querySelectorAll('#presetSizes button').forEach(function(b) { b.classList.remove('active'); });
+});
+
+// 自定义高度输入
+document.getElementById('pngHeight').addEventListener('input', function() {
+  var h = parseInt(this.value);
+  if (isNaN(h) || h < 1) return;
+  currentPngH = h;
+  if (ratioLocked) {
+    currentPngW = Math.round(h * currentSvgRatio);
+    if (currentPngW < 1) currentPngW = 1;
+    if (currentPngW > 4096) currentPngW = 4096;
+  }
+  syncSizeInputs();
+  updateSizeResult();
+  document.querySelectorAll('#presetSizes button').forEach(function(b) { b.classList.remove('active'); });
+});
+
+// Canvas 渲染 SVG 为 PNG 并下载
+function downloadPng() {
+  if (!currentSvgText) return;
+  var w = currentPngW;
+  var h = currentPngH;
+  // 创建 Canvas
+  var canvas = document.createElement('canvas');
+  canvas.width = w;
+  canvas.height = h;
+  var ctx = canvas.getContext('2d');
+  // 将 SVG 转为 data URI
+  var svgBlob = new Blob([currentSvgText], { type: 'image/svg+xml;charset=utf-8' });
+  var url = URL.createObjectURL(svgBlob);
+  var img = new Image();
+  img.onload = function() {
+    ctx.drawImage(img, 0, 0, w, h);
+    URL.revokeObjectURL(url);
+    canvas.toBlob(function(blob) {
+      if (!blob) return;
+      var downloadUrl = URL.createObjectURL(blob);
+      var a = document.createElement('a');
+      a.href = downloadUrl;
+      // 生成文件名
+      var titleEl = document.getElementById('modalTitle');
+      var baseName = titleEl ? titleEl.textContent.replace('.svg', '') : 'icon';
+      a.download = baseName + '_' + w + 'x' + h + '.png';
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      setTimeout(function() { URL.revokeObjectURL(downloadUrl); }, 100);
+    }, 'image/png');
+  };
+  img.onerror = function() {
+    URL.revokeObjectURL(url);
+    alert('PNG 生成失败，请检查 SVG 源码是否有效。');
+  };
+  img.src = url;
 }
 
 document.getElementById('modalOverlay').addEventListener('click', function(e) {
